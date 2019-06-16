@@ -1,5 +1,6 @@
 Driver: https://github.com/ulli-kroll/mt7610u
 
+```
 Wiphy phy0
 	max # scan SSIDs: 128
 	max scan IEs length: 2304 bytes
@@ -161,3 +162,4 @@ Wiphy phy0
 	software interface modes (can always be added):
 	interface combinations are not supported
 	Device supports scan flush.
+```
