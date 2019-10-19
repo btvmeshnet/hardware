@@ -1,6 +1,5 @@
-
 # MR24
-Working on MR24 (3x3 bgn + 3x3 abgn, APM82121)
+Working on MR24 (3x3 bgn + 3x3 abgn, APM82181)
 
 ## PCIe speculation
 On 30 Aug 2018, `91.13.120.222` added [a comment](https://wikidevi.com/w/index.php?title=Cisco_Meraki_MR24&diff=162611&oldid=149198) to the WikiDevi article for the MR24. They noted that the mPCIe slots on the MR24 were non-standard, saying simply:
