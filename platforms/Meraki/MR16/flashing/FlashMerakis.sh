@@ -22,6 +22,6 @@ tail -n 0 -f /var/log/kern.log \
             IP_ADDR="$(echo "$mac_and_ip" | sed 's/.*|//')"
 
             export CONSOLE MERAKI_MAC IP_ADDR IMG_DIR
-            nohup ./flash-mr16.pl -o logs/$MERAKI_MAC.nohup.out &
+            nohup ./flash-MR16.pl -o logs/$MERAKI_MAC.nohup.out &
 
         done )

@@ -25,7 +25,7 @@ die "Failed to set ip addr" if (!$patidx);
 Time::HiRes::sleep(1.0);
 &carefullySend("tftpboot 0x80010000 $img_dir/openwrt-18.06.2-ar71xx-generic-mr16-squashfs-kernel.bin;");
 $patidx = $exp->expect(10, "ar7100> ");
-exit;
+
 Time::HiRes::sleep(1.0);
 &carefullySend("erase 0xbfda0000 +0x240000;");
 $patidx = $exp->expect(30, "ar7100> ");
@@ -79,7 +79,7 @@ $echo_mac =~ s/:/\\x/g;
 $patidx = $exp->expect($timeout, 'root@OpenWrt:/# ');
 
 
-Time::HiRes::sleep(10.0);
+Time::HiRes::sleep(15.0);
 &carefullySend("sync && reboot");
 
 $exp->soft_close();

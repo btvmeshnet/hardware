@@ -10,7 +10,6 @@ You will need
 - Remove the metal cover from the plastic cover
   - You will need to pry the plastic away from the metal to release the clips
   - The best way to do this is by wedging in guitar-style opening picks between each clip and its mate, then picking one clip to leverage up with a flat-head screwdriver; pictured below
-  
 
 - Once removed, usncrew the board from the metal casing
 
