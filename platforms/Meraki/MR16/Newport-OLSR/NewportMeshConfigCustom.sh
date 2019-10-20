@@ -1,15 +1,18 @@
-# This is the auto-configuration script for VT Mesh AP150s
-# Updated for OpenWrt SNAPSHOT r6726-fdf2e1f, to be migrated to 18.05 when released.  
+# This is the auto-configuration script for Newport Mesh's MR16
+# Updated for OpenWrt SNAPSHOT r6726-fdf2e1f, to be migrated to 18.05 when released.  FIXME
 
-# © 2018 Meta Mesh Wireless Communities. All rights reserved.
-# Licensed under the terms of the MIT license.
+# © 2018 Meta Mesh Wireless Communities. All rights reserved. FIXME
+# Licensed under the terms of the MIT license. FIXME
 #
 # AUTHORS
 # * Justin Goetz
 # * Adam Longwill
 # * Evie Vanderveer
+# * Martin Kenedy
 
 # Update where OpenWRT pulls updates from. - AWAITING NEW RELEASE BEFORE MIRRORING ON OUR SERVER
+# TODO
+# Relink the following to another mirror for mr16 ...?
 #rm /etc/opkg/distfeeds.conf
 #echo src/gz chaos_calmer_base http://openwrt.metamesh.org/a150/openwrt/ar71xx/clean/1.0/packages/base>> /etc/opkg.conf
 #echo src/gz chaos_calmer_luci http://openwrt.metamesh.org/a150/openwrt/ar71xx/clean/1.0/packages/luci>> /etc/opkg.conf
@@ -20,7 +23,7 @@
 #echo src/gz pittmesh http://openwrt.metamesh.org/pittmesh>> /etc/opkg.conf
 
 # Set Hostname
-uci set system.@system[0].hostname=ap150-STRING-2401
+uci set system.@system[0].hostname=mr16-STRING-2401
 
 # Disable the RFC1918 filter in the webserver which would prevent you from accessing 100. mesh nodes.
 uci set uhttpd.main.rfc1918_filter=0; uci commit uhttpd
@@ -45,6 +48,7 @@ uci set dhcp.@dnsmasq[0].server=8.8.8.8
 uci commit dhcp
 
 # Download the mm-mac2ipv4 conversion to convert your MAC address to IP's so that you can be sure they are unique on the mesh.
+wget https://raw.githubusercontent.com/pittmesh/ip-calculator/master/mm-mac2ipv4.sh
 chmod 777 mm-mac2ipv4.sh
 
 ipMESH=$(./mm-mac2ipv4.sh $(cat /sys/class/net/eth0/address));
