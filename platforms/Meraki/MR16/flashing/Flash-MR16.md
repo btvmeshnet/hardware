@@ -1,17 +1,23 @@
 # Opening MR12/16
 You will need
-- T5 TORX screwdriver (T6 for ? Meraki MR16 ? if not covered in tape)
-- Philips Screwdriver
-- some sort of prying tool
+- T5 TORX screwdriver
+- Philips screwdriver
+- some sort of prying tools (spudgers work well)
 
 - Unscrew the two screws on either end of the device
- - Notes: They are covered in tape, you can push your Torx screwdriver into it to unscrew through the tape.
+ - Notes: They are somtimes covered in tape, you can push your Torx screwdriver into it to unscrew through the tape.
+ 
+  ![](./pics/screw.jpg)
  
 - Remove the metal cover from the plastic cover
   - You will need to pry the plastic away from the metal to release the clips
   - The best way to do this is by wedging in guitar-style opening picks between each clip and its mate, then picking one clip to leverage up with a flat-head screwdriver; pictured below
 
-- Once removed, usncrew the board from the metal casing
+  ![](./pics/spudgers.jpg)
+
+- Once removed, unscrew the board from the metal casing
+
+  ![](./pics/screws.jpg)
 
 # Prepearing to Flashing MR12/16
 You will need
@@ -20,14 +26,15 @@ You will need
  - Power cable or POE
  - Network Cable
 
-
 **on flashing machine**
 
 ```
-screen /dev/ttyUSB0 115200
+screen /dev/ttyUSB0 115200 # usually requires superuser, so try sudo instead
 ```
 
 Windows> You can use PUTTY, select Serial, then the COM port found in Device Manager, and baud of 115200
+
+![](./pics/TTL_MR12.jpg)
 
 ***on MR12/16***
 - Connect TTL
