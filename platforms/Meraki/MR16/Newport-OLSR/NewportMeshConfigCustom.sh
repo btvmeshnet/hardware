@@ -1,3 +1,4 @@
+#!/bin/ash
 # This is the auto-configuration script for Newport Mesh's MR16
 # Updated for OpenWrt SNAPSHOT r6726-fdf2e1f, to be migrated to 18.05 when released.  FIXME
 
@@ -22,6 +23,120 @@
 #echo src/gz chaos_calmer_telephony http://openwrt.metamesh.org/a150/openwrt/ar71xx/clean/1.0/packages/telephony>> /etc/opkg.conf
 #echo src/gz pittmesh http://openwrt.metamesh.org/pittmesh>> /etc/opkg.conf
 
+cat <<`EOF` > /tmp/mm-mac2ipv4.sh
+#!/bin/sh
+
+#
+# © 2016 Meta Mesh Wireless Communities. All rights reserved.
+# Licensed under the terms of the MIT license.
+#
+# AUTHORS
+# * Jason Khanlar
+#
+
+# Check for --list-all, otherwise proceed
+
+    while getopts ":-:" opt; do
+	if [ $OPTARG = "list-all" ]; then
+            mac1=DC
+            mac2=9F
+            mac3=DB
+            mac4=00
+            mac5=00
+            mac6=00
+	
+            ip1=100
+            ip2=64
+            ip3=0
+            ip4=0
+
+            for octet in `seq 0 255`;do
+		ip2=$(expr $octet % 32 + 96)
+		
+		mac4=$(printf "%02X\n" $ip2)
+		
+		# Format IP address
+		ip="$ip1.$ip2.$ip3.$ip4"
+		
+		# Format MAC address
+		mac="$mac1:$mac2:$mac3:$mac4:$mac5:$mac6"
+		
+		# Pad with space
+		space=`printf '%*s' "$((15 - ${#ip}))"`
+		
+		# Output matching IP address and MAC address
+		echo "$ip $space=> $mac"
+            done
+	    
+            exit
+	fi
+    done
+
+    # Proceed if not --list-all
+
+    # Get # of arguments passed to this script
+    args=$#
+
+    # # of arguments should be 1 or 6
+    # 1 -> DC:9F:DB:CE:13:57 -or- DC-9F-DB-CE-13-57
+    # 6 -> DC 9F DB CE 13 57
+
+    if [ $args -eq 1 -a ${#1} -eq 17 ]; then
+	# Split 1 argument into 6 separate arguments, 1 for each octet
+	# and pass the 6 arguments to a new instance of this script
+	$0 `echo $1 | tr ":-" " "`
+	# After the new instance completes, make sure to end this one
+	exit
+    elif [ $args -eq 6 ]; then
+	mac1=$(echo $1|tr '[a-z]' '[A-Z]')
+	mac2=$(echo $2|tr '[a-z]' '[A-Z]')
+	mac3=$(echo $3|tr '[a-z]' '[A-Z]')
+	mac4=$(echo $4|tr '[a-z]' '[A-Z]')
+	mac5=$(echo $5|tr '[a-z]' '[A-Z]')
+	mac6=$(echo $6|tr '[a-z]' '[A-Z]')
+    else
+	echo "Usage: $0 <MAC address>"
+	echo "Usage: $0 --list-all"
+	echo
+	echo "examples:"
+	echo "  $0 DC:9F:DB:CE:13:57"
+	echo "  $0 DC-9F-DB-CE-13-57"
+	echo "  $0 DC 9F DB CE 13 57"
+	echo "  $0 dc 9f db ce 13 57"
+	exit 1
+    fi
+
+    # Ensure nothing
+    
+    # Convert last three hexadecimal octets to decimal values
+    ip1=100
+    ip2=$(printf "%d" "0x$mac4")
+    ip3=$(printf "%d" "0x$mac5")
+    ip4=$(printf "%d" "0x$mac6")
+    
+    ip2=$(expr $ip2 % 32 + 96)
+    ip4=$(expr $ip4 - $(expr $ip4 % 64 - $ip4 % 32))
+    
+    echo "$ip1.$ip2.$ip3.$ip4"
+}
+EOF
+
+uci set dhcp.lan.ignore='1'
+uci commit dhcp
+
+uci set network.lan.proto='dhcp'
+uci delete network.lan.ipaddr
+uci commit network
+
+/etc/init.d/network reload
+
+# . ./lib.NewportMeshConfigCustom.sh
+opkg update # || die "Could not run opkg update";
+
+opkg install olsrd
+opkg install olsrd-mod-mdns
+opkg install olsrd-mod-jsoninfo
+
 # Set Hostname
 uci set system.@system[0].hostname=mr16-STRING-2401
 
@@ -32,10 +147,11 @@ uci set uhttpd.main.rfc1918_filter=0; uci commit uhttpd
 /etc/init.d/uhttpd restart
 
 # Disable ipv6 dhcp requests because we don't use them and they cause noise.
-/etc/init.d/odhcpd disable
+# We use them @ 12-22North testbed, I think -MIK
+# /etc/init.d/odhcpd disable
 
 # Set the timeserver to a node host on Mount Oliver who has a stratum 0 time server and set logs to go to Meta Mesh.
-uci set system.cfg02e48a.timezone=EST5EDT,M3.2.0,M11.1.0
+uci set system.@system[0].timezone=EST5EDT,M3.2.0,M11.1.0
 uci set system.@system[0].zonename="America/New York"
 uci set system.ntp=timeserver
 uci set system.ntp.enabled=1
@@ -44,14 +160,14 @@ uci set system.ntp.enable_server=1
 uci commit system
 
 # Forward all DNS requests to a public DNS server.
-uci set dhcp.@dnsmasq[0].server=8.8.8.8
+uci set dhcp.@dnsmasq[0].server=1.1.1.1
 uci commit dhcp
 
 # Download the mm-mac2ipv4 conversion to convert your MAC address to IP's so that you can be sure they are unique on the mesh.
-wget https://raw.githubusercontent.com/pittmesh/ip-calculator/master/mm-mac2ipv4.sh
-chmod 777 mm-mac2ipv4.sh
+#wget https://raw.githubusercontent.com/pittmesh/ip-calculator/master/mm-mac2ipv4.sh
+chmod +x /tmp/mm-mac2ipv4.sh
 
-ipMESH=$(./mm-mac2ipv4.sh $(cat /sys/class/net/eth0/address));
+ipMESH=$(/tmp/mm-mac2ipv4.sh $(cat /sys/class/net/eth0/address));
 ipLAN=$(echo "10.$(echo $ipMESH|cut -d "." -f 3-4).1");
 ipHNA=$(echo "10.$(echo $ipMESH|cut -d "." -f 3-4).0");
 ipETHERMESH=100.$(expr $(echo $ipMESH|cut -d "." -f 4) % 64 + 64).$(echo $ipMESH|cut -d "." -f 3).$(echo $ipMESH|cut -d "." -f 2)
@@ -59,7 +175,7 @@ ipETHERMESH=100.$(expr $(echo $ipMESH|cut -d "." -f 4) % 64 + 64).$(echo $ipMESH
 # Set up interfaces and use the mm-mac2ipv4 script's conversions as IP addresses.
 uci set network.mesh=interface
 uci set network.mesh.proto=static
-uci set network.mesh.ipaddr=`echo $ipMESH`
+uci set network.mesh.ipaddr=`echo $ipMESH` # Why `echo`?
 uci set network.mesh.netmask=255.192.0.0
 
 #Set up ethermesh interface
@@ -74,13 +190,14 @@ uci set network.lan=interface
 uci set network.lan.proto=static
 uci set network.lan.ipaddr=`echo $ipLAN`
 uci set network.lan.netmask=255.255.255.0
-uci set network.lan._orig_ifname=eth1
+uci set network.lan._orig_ifname=eth0
 uci set network.lan._orig_bridge=true
 uci set network.lan.force_link=1
 uci set network.lan.bridge=1
 uci commit network
 
 # Set DHCP server to give out leases over the bridged wlan and lan interface for 1 hour from 10-253 and force it.
+uci delete dhcp.lan.ignore
 uci set dhcp.lan.start=10
 uci set dhcp.lan.limit=253
 uci set dhcp.lan.leasetime=1h
@@ -89,37 +206,57 @@ uci commit dhcp
 
 # Set up the WiFi. Please change the SSID to PittMesh-youraddress-2401 for the first device, PittMesh-youraddress-2402 for the second device and so on. Max TX rate for the ar150 is 18dBm.
 uci delete wireless.radio0.disabled
-uci set wireless.radio0.txpower=18
 uci set wireless.radio0.country=US
-uci add wireless wifi-iface
-uci set wireless.@wifi-iface[1].device=radio0
-uci set wireless.@wifi-iface[1].encryption=none
-uci set wireless.@wifi-iface[1].ssid=PittMesh-Backhaul
-uci set wireless.@wifi-iface[1].mode=adhoc
-uci set wireless.@wifi-iface[1].network=mesh
+NEWVIF=`uci add wireless wifi-iface`
+uci rename wireless.$NEWVIF=backhaul2g
+uci set wireless.backhaul2g.device=radio0
+uci set wireless.backhaul2g.encryption=none
+uci set wireless.backhaul2g.ssid=PittMesh-Backhaul
+uci set wireless.backhaul2g.mode=adhoc
+uci set wireless.backhaul2g.network=mesh
 uci set wireless.@wifi-iface[0].network='lan'
-uci set wireless.@wifi-iface[0].ssid=PittMesh-NEWNODE-2401
+uci set wireless.@wifi-iface[0].ssid=PittMesh-MR16-2401
 uci set wireless.@wifi-iface[0].disabled=0
+
+uci delete wireless.radio1.disabled
+uci set wireless.radio1.country=US
+NEWVIF=`uci add wireless wifi-iface`
+uci rename wireless.$NEWVIF=backhaul5g
+uci set wireless.backhaul5g.device=radio1
+uci set wireless.backhaul5g.encryption=none
+uci set wireless.backhaul5g.ssid=PittMesh-Backhaul
+uci set wireless.backhaul5g.mode=adhoc
+uci set wireless.backhaul5g.network=mesh
+uci set wireless.@wifi-iface[1].network='lan'
+uci set wireless.@wifi-iface[1].ssid=PittMesh-MR16-5180
+uci set wireless.@wifi-iface[1].disabled=0
 uci commit wireless
 
-
 # Set HNA announcements for the LAN and Internet
-uci add olsrd Hna4
-uci set olsrd.@Hna4[0].netaddr=`echo $ipHNA`
-uci set olsrd.@Hna4[0].netmask=255.255.255.0
-uci add olsrd Hna4
-uci set olsrd.@Hna4[1].netaddr=0.0.0.0
-uci set olsrd.@Hna4[1].netmask=0.0.0.0
+NEWOLSR=`uci add olsrd Hna4`
+uci rename olsrd.$NEWOLSR=localnet
+uci set olsrd.localnet.netaddr=`echo $ipHNA`
+uci set olsrd.localnet.netmask=255.255.255.0
+
+NEWOLSR=`uci add olsrd Hna4`
+uci rename olsrd.$NEWOLSR=gateway
+uci set olsrd.gateway.netaddr=0.0.0.0
+uci set olsrd.gateway.netmask=0.0.0.0
+uci rename olsrd.@Interface[0]='if0'
 uci set olsrd.@Interface[0].ignore=0
 uci set olsrd.@Interface[0].Mode=mesh
 uci set olsrd.@Interface[0].interface='mesh'
-uci add olsrd InterfaceDefaults
-uci set olsrd.@InterfaceDefaults[0].Mode=mesh
-uci add olsrd Interface
-uci set olsrd.@Interface[1].ignore=0
-uci set olsrd.@Interface[1].interface=lan
-uci set olsrd.@Interface[1].Mode=ether
-uci set olsrd.@Interface[1].interface=ethermesh
+
+NEWOLSRDEFAULT=`uci add olsrd InterfaceDefaults`
+uci rename olsrd.$NEWOLSRDEFAULT='if0mode'
+uci set olsrd.if0mode.Mode=mesh
+
+NEWOLSRIF=`uci add olsrd Interface`
+uci rename olsrd.$NEWOLSRIF='if1'
+uci set olsrd.if1.ignore=0
+uci set olsrd.if1.interface=lan
+uci set olsrd.if1.Mode=ether
+uci set olsrd.if1.interface=ethermesh
 uci set olsrd.@olsrd[0].LinkQualityAlgorithm=etx_ffeth
 
 # Enable olsrd plugins
@@ -128,6 +265,7 @@ echo "    option library olsrd_mdns.so.1.0.1" >> /etc/config/olsrd
 pluginNum=$(uci show|grep olsrd.@LoadPlugin|grep olsrd_mdns.so.1.0.1|sed "s|.*\[\([0-9]*\)\].*|\1|")
 uci set olsrd.@LoadPlugin[$pluginNum].ignore=0
 
+# You need jsoninfo for this
 echo "config LoadPlugin" >> /etc/config/olsrd
 echo "    option library olsrd_jsoninfo.so.1.1" >> /etc/config/olsrd
 pluginNum=$(uci show|grep olsrd.@LoadPlugin|grep olsrd_jsoninfo.so.1.1|sed "s|.*\[\([0-9]*\)\].*|\1|")
