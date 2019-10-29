@@ -132,16 +132,17 @@ uci commit network
 # . ./lib.NewportMeshConfigCustom.sh
 opkg update # || die "Could not run opkg update";
 
+opkg remove iw --force-depends
+opkg install iw-full
+opkg remove wpad-mini
+opkg install wpad
+
 opkg install olsrd
 opkg install olsrd-mod-mdns
 opkg install olsrd-mod-jsoninfo
 opkg install olsrd-mod-p2pd
 opkg install olsrd-mod-arprefresh
 opkg install olsrd-mod-txtinfo
-opkg remove iw --force-depends
-opkg install iw-full
-opkg remove wpad-mini
-opkg install wpad
 opkg install iperf3
 
 # Set Hostname
