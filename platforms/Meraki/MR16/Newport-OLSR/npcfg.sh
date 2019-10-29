@@ -23,7 +23,7 @@
 #echo src/gz chaos_calmer_telephony http://openwrt.metamesh.org/a150/openwrt/ar71xx/clean/1.0/packages/telephony>> /etc/opkg.conf
 #echo src/gz pittmesh http://openwrt.metamesh.org/pittmesh>> /etc/opkg.conf
 
-cat <<`EOF` > /tmp/mm-mac2ipv4.sh
+cat <<'EOF' > /tmp/mm-mac2ipv4.sh
 #!/bin/sh
 
 #
@@ -118,7 +118,6 @@ cat <<`EOF` > /tmp/mm-mac2ipv4.sh
     ip4=$(expr $ip4 - $(expr $ip4 % 64 - $ip4 % 32))
     
     echo "$ip1.$ip2.$ip3.$ip4"
-}
 EOF
 
 uci set dhcp.lan.ignore='1'
@@ -136,6 +135,14 @@ opkg update # || die "Could not run opkg update";
 opkg install olsrd
 opkg install olsrd-mod-mdns
 opkg install olsrd-mod-jsoninfo
+opkg install olsrd-mod-p2pd
+opkg install olsrd-mod-arprefresh
+opkg install olsrd-mod-txtinfo
+opkg remove iw --force-depends
+opkg install iw-full
+opkg remove wpad-mini
+opkg install wpad
+opkg install iperf3
 
 # Set Hostname
 uci set system.@system[0].hostname=mr16-STRING-2401
@@ -210,7 +217,8 @@ uci set wireless.radio0.country=US
 NEWVIF=`uci add wireless wifi-iface`
 uci rename wireless.$NEWVIF=backhaul2g
 uci set wireless.backhaul2g.device=radio0
-uci set wireless.backhaul2g.encryption=none
+uci set wireless.backhaul2g.encryption=psk2+aes
+uci set wireless.backhaul2g.key='testkeys'
 uci set wireless.backhaul2g.ssid=PittMesh-Backhaul
 uci set wireless.backhaul2g.mode=adhoc
 uci set wireless.backhaul2g.network=mesh
@@ -220,10 +228,13 @@ uci set wireless.@wifi-iface[0].disabled=0
 
 uci delete wireless.radio1.disabled
 uci set wireless.radio1.country=US
+uci set wireless.radio1.txpower='22'
+uci set wireless.radio1.htmode='HT40'
 NEWVIF=`uci add wireless wifi-iface`
 uci rename wireless.$NEWVIF=backhaul5g
 uci set wireless.backhaul5g.device=radio1
-uci set wireless.backhaul5g.encryption=none
+uci set wireless.backhaul5g.encryption=psk2+aes
+uci set wireless.backhaul5g.key='testkeys'
 uci set wireless.backhaul5g.ssid=PittMesh-Backhaul
 uci set wireless.backhaul5g.mode=adhoc
 uci set wireless.backhaul5g.network=mesh
