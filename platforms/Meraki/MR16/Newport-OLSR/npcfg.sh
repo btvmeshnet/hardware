@@ -132,18 +132,19 @@ uci commit network
 # . ./lib.NewportMeshConfigCustom.sh
 opkg update # || die "Could not run opkg update";
 
+# New packages based on this article:
+# https://justingoetz.net/display/PB/2019/04/10/Comprehensive+guide+to+running+OLSR+over+WPA2+on+OpenWRT
+
 opkg remove iw --force-depends
 opkg install iw-full
 opkg remove wpad-mini
-opkg install wpad
 
-opkg install olsrd
-opkg install olsrd-mod-mdns
-opkg install olsrd-mod-jsoninfo
-opkg install olsrd-mod-p2pd
-opkg install olsrd-mod-arprefresh
-opkg install olsrd-mod-txtinfo
-opkg install iperf3
+opkg install luci-app-olsr luci-app-olsr-services luci-app-olsr-viz olsrd \
+     olsrd-mod-arprefresh olsrd-mod-bmf olsrd-mod-dot-draw olsrd-mod-dyn-gw \
+     olsrd-mod-dyn-gw-plain olsrd-mod-httpinfo olsrd-mod-mdns \
+     olsrd-mod-nameservice olsrd-mod-p2pd olsrd-mod-pgraph olsrd-mod-secure \
+     olsrd-mod-txtinfo olsrd-mod-watchdog olsrd-mod-quagga wireless-tools \
+     luci-lib-json kmod-ipip wpad authsae iperf3
 
 # Set Hostname
 uci set system.@system[0].hostname=mr16-STRING-2401
