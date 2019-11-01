@@ -228,21 +228,22 @@ uci set wireless.@wifi-iface[0].network='lan'
 uci set wireless.@wifi-iface[0].ssid=PittMesh-MR16-2401
 uci set wireless.@wifi-iface[0].disabled=0
 
-uci delete wireless.radio1.disabled
-uci set wireless.radio1.country=US
-uci set wireless.radio1.txpower='22'
-uci set wireless.radio1.htmode='HT40'
-NEWVIF=`uci add wireless wifi-iface`
-uci rename wireless.$NEWVIF=backhaul5g
-uci set wireless.backhaul5g.device=radio1
-uci set wireless.backhaul5g.encryption=psk2+aes
-uci set wireless.backhaul5g.key='testkeys'
-uci set wireless.backhaul5g.ssid=PittMesh-Backhaul
-uci set wireless.backhaul5g.mode=adhoc
-uci set wireless.backhaul5g.network=mesh
-uci set wireless.@wifi-iface[1].network='lan'
-uci set wireless.@wifi-iface[1].ssid=PittMesh-MR16-5180
-uci set wireless.@wifi-iface[1].disabled=0
+# uci delete wireless.radio1.disabled
+# uci set wireless.radio1.country=US
+# uci set wireless.radio1.txpower='22'
+# uci set wireless.radio1.htmode='HT40'
+# NEWVIF=`uci add wireless wifi-iface`
+# uci rename wireless.$NEWVIF=backhaul5g
+# uci set wireless.backhaul5g.device=radio1
+# uci set wireless.backhaul5g.encryption=psk2+aes
+# uci set wireless.backhaul5g.key='testkeys'
+# uci set wireless.backhaul5g.ssid=PittMesh-Backhaul
+# uci set wireless.backhaul5g.mode=adhoc
+# uci set wireless.backhaul5g.network=mesh
+# uci set wireless.@wifi-iface[1].network='lan'
+# uci set wireless.@wifi-iface[1].ssid=PittMesh-MR16-5180
+# uci set wireless.@wifi-iface[1].disabled=0
+
 uci commit wireless
 
 # Set HNA announcements for the LAN and Internet
