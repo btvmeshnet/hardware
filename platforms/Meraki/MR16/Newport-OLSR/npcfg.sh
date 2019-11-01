@@ -267,7 +267,6 @@ uci set olsrd.if0mode.Mode=mesh
 NEWOLSRIF=`uci add olsrd Interface`
 uci rename olsrd.$NEWOLSRIF='if1'
 uci set olsrd.if1.ignore=0
-uci set olsrd.if1.interface=lan
 uci set olsrd.if1.Mode=ether
 uci set olsrd.if1.interface=ethermesh
 uci set olsrd.@olsrd[0].LinkQualityAlgorithm=etx_ffeth
