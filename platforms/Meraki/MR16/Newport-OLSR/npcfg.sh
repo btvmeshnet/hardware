@@ -184,7 +184,7 @@ ipETHERMESH=100.$(expr $(echo $ipMESH|cut -d "." -f 4) % 64 + 64).$(echo $ipMESH
 # Set up interfaces and use the mm-mac2ipv4 script's conversions as IP addresses.
 uci set network.mesh=interface
 uci set network.mesh.proto=static
-uci set network.mesh.ipaddr=`echo $ipMESH` # Why `echo`?
+uci set network.mesh.ipaddr=$ipMESH
 uci set network.mesh.netmask=255.192.0.0
 
 #Set up ethermesh interface
