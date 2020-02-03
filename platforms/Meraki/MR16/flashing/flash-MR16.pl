@@ -23,7 +23,7 @@ $patidx = $exp->expect(1, "ar7100> ");
 die "Failed to set ip addr" if (!$patidx);
 
 Time::HiRes::sleep(1.0);
-&carefullySend("tftpboot 0x80010000 $img_dir/openwrt-18.06.2-ar71xx-generic-mr16-squashfs-kernel.bin;");
+&carefullySend("tftpboot 0x80010000 ${img_dir}openwrt-18.06.2-ar71xx-generic-mr16-squashfs-kernel.bin;");
 $patidx = $exp->expect(10, "ar7100> ");
 
 Time::HiRes::sleep(1.0);
@@ -35,7 +35,7 @@ Time::HiRes::sleep(1.0);
 $patidx = $exp->expect(30, "ar7100> ");
 
 Time::HiRes::sleep(1.0);
-&carefullySend("tftpboot 0x80010000 $img_dir/openwrt-18.06.2-ar71xx-generic-mr16-squashfs-rootfs.bin;");
+&carefullySend("tftpboot 0x80010000 ${img_dir}openwrt-18.06.2-ar71xx-generic-mr16-squashfs-rootfs.bin;");
 $patidx = $exp->expect(10, "ar7100> ");
 
 Time::HiRes::sleep(1.0);
